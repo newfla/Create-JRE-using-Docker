@@ -1,0 +1,42 @@
+#syntax=docker/dockerfile:1
+
+FROM ubuntu:hirsute AS base_image
+ARG graalvm_version="22.0.0.2"
+
+WORKDIR /etc
+ADD https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${graalvm_version}/graalvm-ce-java17-linux-amd64-${graalvm_version}.tar.gz .
+RUN tar -xzf graalvm-ce-java17-linux-amd64-${graalvm_version}.tar.gz && ln -s graalvm-ce-java17-${graalvm_version} graalvm-ce && rm graalvm-ce-java17-linux-amd64-${graalvm_version}.tar.gz
+ENV PATH=/etc/graalvm-ce/bin:$PATH
+ENV JAVA_HOME=/etc/graalvm-ce
+
+#binutils has objcopy package requested by --strip-debug
+FROM base_image AS server_builder
+ARG maven_version="3.8.4"
+
+RUN apt update && apt install -y binutils
+WORKDIR /etc
+ADD https://dlcdn.apache.org/maven/maven-3/${maven_version}/binaries/apache-maven-${maven_version}-bin.tar.gz .
+RUN tar -xzf apache-maven-${maven_version}-bin.tar.gz && ln -s apache-maven-${maven_version} maven && rm apache-maven-${maven_version}-bin.tar.gz
+ENV PATH=/etc/maven/bin:$PATH
+WORKDIR /server
+COPY /server .
+RUN mvn clean package && deps=$(jdeps --ignore-missing-deps --print-module-deps ./target/server-1.0-jar-with-dependencies.jar) && \
+    jlink --add-modules $deps --output minimal_jre --strip-debug --no-man-pages --no-header-files --compress=2
+
+FROM ubuntu:hirsute AS minimal_jre_image
+WORKDIR /etc/jre
+COPY --from=server_builder /server/minimal_jre .
+ENV JAVA_HOME=/etc/jre
+ENV PATH=/etc/jre/bin:$PATH
+WORKDIR /server_app
+COPY --from=server_builder /server/target/server-1.0-jar-with-dependencies.jar ./server.jar
+COPY /server/run.sh /
+EXPOSE 7070
+ENTRYPOINT [ "/run.sh" ]
+
+#FROM base_image AS jdk_image
+#WORKDIR /server_app
+#COPY --from=server_builder /server/target/server-1.0-jar-with-dependencies.jar ./server.jar
+#COPY /server/run.sh /
+#EXPOSE 7070
+#ENTRYPOINT [ "/run.sh" ]
