@@ -9,7 +9,7 @@ The code is packaged as single Jar using the [maven-assembly-plugin](https://mav
 
 - **Dockerfile** describes *4* images based on the *blazing fast* [GraalVM CE JDK](https://github.com/oracle/graal/) artifact:
 
-    1. **base_image**: [Ubuntu 20.04 docker image](https://hub.docker.com/layers/ubuntu/library/ubuntu/hirsute/images/sha256-cb92f03e258f965442b883f5402b310dd7a5ea0a661a865ad02a42bc21234bf7?context=explore) + [GraalVM CE JDK](https://github.com/oracle/graal/)
+    1. **base_image**: [Ubuntu 22.04 docker image](https://hub.docker.com/layers/library/ubuntu/jammy/images/sha256-42ba2dfce475de1113d55602d40af18415897167d47c2045ec7b6d9746ff148f?context=explore) + [GraalVM CE JDK](https://github.com/oracle/graal/)
 
     2. **server_builder**: builds the maven project and creates the minimal JRE. Base modules are discovered using [jdeps](https://docs.oracle.com/en/java/javase/11/tools/jdeps.html) and exported as JRE distribution by [jlink](https://docs.oracle.com/en/java/javase/11/tools/jlink.html)
 

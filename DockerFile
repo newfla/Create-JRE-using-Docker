@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1
 
-FROM ubuntu:hirsute AS base_image
-ARG graalvm_version="22.0.0.2"
+FROM ubuntu:jammy AS base_image
+ARG graalvm_version="22.2.0"
 
 WORKDIR /etc
 ADD https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${graalvm_version}/graalvm-ce-java17-linux-amd64-${graalvm_version}.tar.gz .
@@ -11,7 +11,7 @@ ENV JAVA_HOME=/etc/graalvm-ce
 
 #binutils has objcopy package requested by --strip-debug
 FROM base_image AS server_builder
-ARG maven_version="3.8.4"
+ARG maven_version="3.8.6"
 
 RUN apt update && apt install -y binutils
 WORKDIR /etc
@@ -23,7 +23,7 @@ COPY /server .
 RUN mvn clean package && deps=$(jdeps --ignore-missing-deps --print-module-deps ./target/server-1.0-jar-with-dependencies.jar) && \
     jlink --add-modules $deps --output minimal_jre --strip-debug --no-man-pages --no-header-files --compress=2
 
-FROM ubuntu:hirsute AS minimal_jre_image
+FROM ubuntu:jammy AS minimal_jre_image
 WORKDIR /etc/jre
 COPY --from=server_builder /server/minimal_jre .
 ENV JAVA_HOME=/etc/jre
