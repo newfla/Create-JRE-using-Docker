@@ -13,8 +13,27 @@ The code is packaged as single Jar using the [maven-assembly-plugin](https://mav
 
     2. **server_builder**: builds the maven project and creates the minimal JRE. Base modules are discovered using [jdeps](https://docs.oracle.com/en/java/javase/11/tools/jdeps.html) and exported as JRE distribution by [jlink](https://docs.oracle.com/en/java/javase/11/tools/jlink.html)
 
-    ![Docker Minimal JRE Image Snapshot](https://github.com/newfla/Create-JRE-using-Docker/blob/main//res/minimal_jre_snap.png)
+    ![Docker Minimal JRE Image Snapshot](https://github.com/newfla/Create-JRE-using-Docker/blob/main//res/minimal_jre_snap.png?raw=true)
 
     2. **minimal_jre_image**: ships the minimal JRE for the server application
 
     3. **jdk_image**: contains the whole GraalVM JDK 
+
+# Size reduction
+| Image  | Size  | vs JDK | vs JRE  |
+|--------|-------|--------|---------
+| JDK    | 835MB | -      | 618%    |
+| JRE    | 135MB | 16%    | -       |
+
+    
+**The jre based image is 84% smaller than the optimized-jre one**
+
+
+# Start-up time reduction
+
+| Image  | Time  | vs JDK | vs JRE  |
+|--------|-------|--------|---------|
+| JDK    | 502ms | -      | 127%    |
+| JRE    | 395ms | 78%    | -       |
+
+**The jre based image is 22% faster to start-up than the optimized-jre one**
